@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f8fafc;
+}
+
+.input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #bae6fd;
+  background: #ffffff;
+  padding: 0.85rem 1rem;
+  color: #0f172a;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+}

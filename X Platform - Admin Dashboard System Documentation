@@ -1,0 +1,648 @@
+X Platform - Admin Dashboard System Documentation
+Project Overview
+
+The Admin Dashboard is the central management system of X Platform.
+
+It allows administrators to fully manage:
+
+Subjects
+Courses
+Lessons
+Lesson Resources
+Videos
+Video Uploads to Mux
+Teachers
+Educational Content Structure
+
+The dashboard was designed using:
+
+Frontend:
+
+React
+TypeScript
+Vite
+Tailwind CSS
+
+Backend:
+
+Django
+Django REST Framework
+PostgreSQL
+
+The dashboard architecture was built in a modular and scalable way to support future expansion.
+
+Admin Dashboard Architecture
+
+The frontend dashboard follows a modular structure:
+
+dashboard/
+  admin/
+    modules/
+      subjects/
+      courses/
+      lessons/
+      videos/
+
+Each module contains:
+
+components/
+pages/
+services/
+types/
+
+This architecture provides:
+
+Scalability
+Clean separation of concerns
+Easier maintenance
+Reusable UI components
+Easier future expansion
+Admin Dashboard Access Control
+
+The dashboard is protected using JWT authentication and role-based authorization.
+
+Only users with:
+
+role = admin
+
+can access admin routes.
+
+Frontend protection uses:
+
+ProtectedRoute
+
+with:
+
+requiredRole="admin"
+
+Unauthorized users are redirected to:
+
+/
+ProtectedRoute System (Updated)
+
+The route protection system was upgraded to support:
+
+Authentication validation
+Role validation
+Public routes
+Dashboard isolation
+
+The system checks:
+
+JWT token exists
+User data exists
+User role matches required role
+
+Example:
+
+<ProtectedRoute requiredRole="admin">
+  <AdminLayout />
+</ProtectedRoute>
+User Information Persistence
+
+The frontend stores authenticated user data inside:
+
+localStorage
+
+Stored data includes:
+
+access_token
+refresh_token
+user
+
+The stored user object contains:
+
+id
+username
+email
+role
+profile_image
+
+This allows the frontend to:
+
+Detect admin users
+Control dashboard visibility
+Render protected navigation
+Avoid unnecessary API calls
+Initial Dashboard Structure
+
+The admin dashboard includes:
+
+Overview
+Subjects Management
+Courses Management
+Lessons Management
+Videos Management
+
+Routing structure:
+
+/admin
+/admin/subjects
+/admin/courses
+/admin/lessons
+/admin/videos
+Admin Overview Page
+
+The Overview page acts as the dashboard homepage.
+
+It displays future platform statistics such as:
+
+Total users
+Total courses
+Total lessons
+Total subjects
+Purchases
+Revenue
+Active students
+
+Initially all values displayed:
+
+0
+
+This behavior was intentional because backend statistics APIs had not yet been implemented.
+
+Subjects Management System
+Features
+
+Administrators can:
+
+Create subjects
+Edit subjects
+Delete subjects
+Search subjects
+Upload subject images
+
+Each subject contains:
+
+name
+slug
+description
+image
+created_at
+Subjects Frontend Architecture
+
+Frontend pages:
+
+SubjectsList.tsx
+CreateSubject.tsx
+EditSubject.tsx
+
+Reusable components:
+
+SubjectsTable
+SubjectForm
+SearchInput
+
+API layer:
+
+subjectsApi.ts
+Courses Management System
+Features
+
+Administrators can:
+
+Create courses
+Assign teachers
+Set prices
+Upload course thumbnails
+Publish/unpublish courses
+Edit courses
+Delete courses
+Search courses
+
+Each course contains:
+
+subject
+teacher
+title
+description
+image
+price
+is_published
+created_at
+Teacher Selection System
+
+Originally the frontend attempted to fetch teachers from:
+
+/api/users/?role=teacher
+
+This produced:
+
+404 Not Found
+
+because no dedicated admin endpoint existed for teacher retrieval.
+
+Solution
+
+A dedicated Django application was created:
+
+admin_dashboard
+
+This app centralizes all admin-only APIs.
+
+A new endpoint was added:
+
+GET /api/admin-dashboard/teachers/
+
+This endpoint returns only users with:
+
+role = teacher
+
+Benefits:
+
+Cleaner architecture
+Better separation
+Avoid mixing admin logic into unrelated apps
+Easier future scaling
+Lessons Management System
+Features
+
+Administrators can:
+
+Create lessons
+Edit lessons
+Delete lessons
+Assign lessons to courses
+Set lesson order
+Set preview availability
+Upload thumbnails
+Add lesson descriptions
+
+Each lesson contains:
+
+course
+title
+description
+video_url
+thumbnail
+order
+is_preview
+created_at
+Lesson Resources System
+
+Lesson resources allow attaching downloadable files to lessons.
+
+Examples:
+
+PDFs
+Worksheets
+Notes
+Homework files
+Features
+
+Administrators can:
+
+Upload resources
+Delete resources
+View uploaded resources
+
+Each resource contains:
+
+lesson
+title
+file
+uploaded_at
+React Hook Optimization Problems
+
+Several React Hook warnings appeared during development.
+
+Example warnings:
+
+react-hooks/exhaustive-deps
+react-hooks/set-state-in-effect
+
+These appeared in:
+
+LessonsList.tsx
+LessonResources.tsx
+
+Cause:
+
+Functions that updated state were being called directly inside:
+
+useEffect()
+
+without proper dependency handling.
+
+Solution
+
+The logic was refactored using:
+
+let isMounted = true
+
+and async loaders inside effects.
+
+Benefits:
+
+Prevented cascading renders
+Prevented memory leaks
+Fixed ESLint warnings
+Improved React performance
+Video Management System
+
+The video system is one of the most advanced systems in the platform.
+
+The architecture supports:
+
+Direct upload from device
+Upload by external URL
+Mux integration
+Automatic video processing
+Automatic lesson linking
+Signed playback preparation
+DRM preparation
+Webhook processing
+Mux Integration
+
+Mux was integrated as the primary video infrastructure provider.
+
+The system uses:
+
+Mux Direct Upload
+
+instead of uploading videos through Django.
+
+Benefits:
+
+Faster uploads
+Reduced backend load
+Scalable architecture
+Enterprise-level video delivery
+Video Upload Methods
+
+Administrators can upload videos using:
+
+1. Device Upload
+Upload from Device
+
+The browser uploads directly to Mux.
+
+Flow:
+
+Frontend
+→ Django creates upload URL
+→ Browser uploads directly to Mux
+→ Mux processes video
+→ Webhook updates lesson
+2. URL Upload
+
+Administrators can also upload videos using:
+
+External Video URL
+
+Mux downloads and processes the video automatically.
+
+Video Upload UI Enhancements
+
+The upload system includes:
+
+Progress Bar
+
+Shows real-time upload progress.
+
+Upload Status
+
+States include:
+
+idle
+uploading
+processing
+ready
+failed
+Retry System
+
+Allows retrying failed uploads.
+
+Validation System
+
+Validation checks:
+
+File size
+File extension
+MIME type
+
+Supported formats:
+
+MP4
+MOV
+WEBM
+MKV
+Video Webhook System
+
+Mux sends webhook events to Django.
+
+Webhook URL:
+
+/api/admin-dashboard/mux/webhook/
+
+Webhook responsibilities:
+
+Detect completed videos
+Save playback IDs
+Save asset IDs
+Link videos to lessons automatically
+Important Mux Event
+
+The main event used:
+
+video.asset.ready
+
+This indicates:
+
+Video processing completed successfully
+Passthrough System
+
+Each uploaded video includes:
+
+passthrough = lesson_id
+
+Example:
+
+"passthrough": "3"
+
+This allows Django to know which lesson the uploaded video belongs to.
+
+Signed Playback Preparation
+
+Playback IDs are generated using:
+
+policy = signed
+
+This prepares the system for:
+
+Secure playback
+JWT playback tokens
+DRM integration
+Watermarking
+Playback restrictions
+Major Problems Encountered During Development
+1. ProtectedRoute TypeScript Error
+
+Error:
+
+Property 'requiredRole' does not exist on type 'Props'
+
+Cause:
+
+The ProtectedRoute component originally only accepted:
+
+children
+
+Solution:
+
+The Props type was extended to include:
+
+requiredRole?: string
+2. User Data Was Null
+
+Problem:
+
+Admin users were redirected away from dashboard routes.
+
+Cause:
+
+The frontend user object was:
+
+null
+
+because login responses were not storing the user correctly.
+
+Solution:
+
+The login flow was updated to persist:
+
+user
+access_token
+refresh_token
+
+inside localStorage.
+
+3. Teacher Endpoint 404 Error
+
+Error:
+
+/api/users/?role=teacher
+404 Not Found
+
+Solution:
+
+Dedicated admin endpoints were moved into:
+
+admin_dashboard
+4. Mux Webhook Offline Errors
+
+Error:
+
+ERR_NGROK_3200
+The endpoint is offline
+
+Cause:
+
+ngrok tunnel was not running.
+
+Solution:
+
+Started ngrok using:
+
+ngrok http 8000
+5. Mux Webhook 400 Bad Request
+
+Cause:
+
+Invalid webhook configuration.
+
+Initially suspected:
+
+MUX_WEBHOOK_SECRET
+
+but the actual issue was:
+
+DisallowedHost
+6. Django DisallowedHost Error
+
+Error:
+
+Invalid HTTP_HOST header
+
+Cause:
+
+The ngrok domain was not added to:
+
+ALLOWED_HOSTS
+
+Solution:
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "refill-doorstop-gab.ngrok-free.dev",
+]
+
+After this fix:
+
+Webhook requests succeeded
+Videos connected automatically
+7. External Video Download Failure
+
+Mux failed downloading some external videos.
+
+Error:
+
+download_failed
+
+Cause:
+
+Unsupported remote video source.
+
+Solution:
+
+Used verified MP4 URLs
+Added future validation plans
+Prioritized direct uploads
+Security Philosophy of the Admin Dashboard
+
+The dashboard was designed to:
+
+Centralize platform management
+Isolate admin logic
+Protect educational content
+Scale safely
+Support future enterprise-level video infrastructure
+Minimize backend load
+Prepare for DRM and advanced playback security
+Current Dashboard Capabilities
+
+The admin dashboard can currently manage:
+
+✅ Subjects
+✅ Courses
+✅ Teachers
+✅ Lessons
+✅ Lesson Resources
+✅ Video Uploads
+✅ Mux Integration
+✅ Direct Device Uploads
+✅ Upload Progress
+✅ Upload Validation
+✅ Automatic Video Linking
+✅ Secure Playback Preparation
+✅ Role-Based Protection
+✅ Modular Architecture
+
+Future Dashboard Expansions
+
+Planned future systems include:
+
+Purchases Management
+Access Codes Management
+Users Management
+Revenue Analytics
+Student Analytics
+Video Processing Analytics
+AI Content Management
+Real Payment Gateway Monitoring
+Teacher Dashboard
+Student Dashboard
+Notification System
+Audit Logs
+DRM Management UI

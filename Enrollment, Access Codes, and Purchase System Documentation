@@ -1,0 +1,593 @@
+X Platform - Enrollment, Access Codes, and Purchase System Documentation
+Project Overview
+
+X Platform is an e-learning platform designed initially for Jordanian Tawjihi students.
+
+The platform currently supports:
+
+Subjects
+Courses
+Course resources
+Course enrollment
+Access codes
+Internal purchase system
+
+The platform architecture is designed to scale later into a fully production-ready educational system with:
+
+Real payment gateways
+Lessons system
+Video protection
+AI assistant
+Teacher dashboards
+Student progress tracking
+Course Enrollment System
+Overview
+
+The Course Enrollment system is the central access-control system of the platform.
+
+Instead of checking:
+
+Did the student purchase the course?
+Did the student redeem an access code?
+
+The platform checks only:
+
+Does the student have an active enrollment for this course?
+
+This creates a clean and scalable architecture.
+
+Enrollment Philosophy
+
+All access methods eventually lead to:
+
+CourseEnrollment
+
+This means:
+
+Access Code
+→ CourseEnrollment
+
+Online Purchase
+→ CourseEnrollment
+
+Future Admin Grant
+→ CourseEnrollment
+
+Future Free Courses
+→ CourseEnrollment
+
+The system separates:
+
+How access was obtained
+
+from:
+
+Whether the student currently has access
+
+This improves:
+
+Scalability
+Maintainability
+Security
+Access control consistency
+Database
+Main Enrollment Table
+enrollments_courseenrollment
+
+Fields:
+
+id
+student_id
+course_id
+source
+is_active
+created_at
+updated_at
+Enrollment Sources
+
+The system tracks how access was obtained.
+
+Available sources:
+
+access_code
+purchase
+admin_grant
+free
+
+This allows future analytics and auditing.
+
+Example:
+
+How many students joined through access codes?
+How many students purchased online?
+Enrollment Rules
+One Enrollment Per Course
+
+A student cannot own the same course twice.
+
+The system enforces:
+
+unique(student, course)
+
+This prevents:
+
+Duplicate purchases
+Duplicate enrollments
+Data inconsistency
+Enrollment Activation
+
+Each enrollment contains:
+
+is_active
+
+Purpose:
+
+Allow disabling access later without deleting records
+
+Example future uses:
+
+Refunds
+Suspensions
+Expired subscriptions
+Admin restrictions
+My Courses System
+Endpoint
+GET /api/enrollments/my-courses/
+
+Authenticated students can retrieve all active courses they own.
+
+The endpoint returns:
+
+Course title
+Description
+Image
+Teacher
+Subject
+Price
+Enrollment source
+Enrollment Access Control
+
+The entire platform access system depends on:
+
+CourseEnrollment
+
+The platform NEVER checks directly:
+
+Did the student purchase?
+Did the student redeem a code?
+
+Instead it checks:
+
+Does an active enrollment exist?
+
+This architecture prevents duplicated business logic.
+
+Access Codes System
+Overview
+
+The Access Codes system allows students to unlock courses using unique activation codes.
+
+The system is designed to support:
+
+Offline sales
+Physical store distribution
+Promotional codes
+Scholarship access
+Future partnerships
+Access Code Structure
+
+Each code:
+
+8 characters
+Uppercase letters + numbers
+Globally unique
+Linked to one course
+Single-use only
+Can be disabled
+Supports expiration dates
+
+Example:
+
+A7K9P2QX
+M3Z8TR1B
+Database
+Main Access Code Table
+access_codes_accesscode
+
+Fields:
+
+id
+code
+course_id
+is_used
+is_active
+used_by_id
+created_by_id
+used_at
+expires_at
+created_at
+Code Generation System
+
+Codes are generated automatically by the backend.
+
+The system guarantees uniqueness by:
+
+Checking the database before saving
+
+Generated characters use:
+
+A-Z
+0-9
+Why Codes Are NOT Generated Automatically With Courses
+
+The platform intentionally separates:
+
+Course Creation
+
+from:
+
+Access Code Generation
+
+Reason:
+
+Courses may:
+
+Still be incomplete
+Remain unpublished
+Not require access codes
+Need different quantities later
+
+This gives Admin users full control.
+
+Access Code Generation API
+Admin Only
+
+Endpoint:
+
+POST /api/access-codes/generate/
+
+Request Example:
+
+{
+  "course_id": 1,
+  "count": 50,
+  "expires_at": "2026-12-31T23:59:59Z"
+}
+
+The backend generates multiple unique codes for the selected course.
+
+Access Code Redemption
+Student Flow
+
+Student enters:
+
+Activation code
+
+Backend validates:
+
+Code exists
+Code is active
+Code is unused
+Code is not expired
+Student does not already own the course
+
+If valid:
+
+Create CourseEnrollment
+Mark code as used
+Store used_by
+Store used_at
+Transaction Safety
+
+The redemption process uses:
+
+transaction.atomic()
+
+Purpose:
+
+Prevent partial database updates.
+
+Without this protection:
+
+Possible issue:
+
+Enrollment created
+BUT code not marked as used
+
+This could create inconsistent data.
+
+Atomic transactions ensure:
+
+Everything succeeds
+OR everything rolls back
+Access Code APIs
+Generate Codes
+POST /api/access-codes/generate/
+
+Admin only.
+
+Redeem Code
+POST /api/access-codes/redeem/
+
+Authenticated students only.
+
+Purchase System
+Overview
+
+The platform includes an internal purchase system designed to simulate real online payments.
+
+The architecture is already prepared for future integration with:
+
+Stripe
+PayPal
+HyperPay
+PayTabs
+Purchase Philosophy
+
+The system separates:
+
+Payment processing
+
+from:
+
+Course access
+
+Meaning:
+
+Purchase completed
+→ Create CourseEnrollment
+
+The payment provider NEVER directly controls access.
+
+This creates a provider-independent architecture.
+
+Purchase Database
+Main Purchase Table
+purchases_purchase
+
+Fields:
+
+id
+student_id
+course_id
+amount
+status
+provider
+provider_reference
+completed_at
+created_at
+updated_at
+Purchase Status System
+
+Available statuses:
+
+pending
+completed
+failed
+cancelled
+refunded
+
+Purpose:
+
+Track the entire payment lifecycle.
+
+Internal Purchase Flow
+Step 1
+
+Student clicks:
+
+Buy Course
+
+Backend creates:
+
+Purchase(status="pending")
+Step 2
+
+Temporary internal endpoint completes purchase:
+
+pending → completed
+Step 3
+
+Backend automatically creates:
+
+CourseEnrollment
+Duplicate Purchase Protection
+
+The system prevents duplicate pending purchases.
+
+If the student clicks the Buy button multiple times:
+
+The backend reuses the existing pending purchase
+
+instead of creating multiple payment records.
+
+This protects against:
+
+Double-clicks
+Slow internet
+UI lag
+Duplicate transactions
+Enrollment Duplication Protection
+
+The system also prevents:
+
+Duplicate course ownership
+
+using:
+
+unique(student, course)
+
+This ensures:
+
+A student can never own the same course twice.
+
+Future Real Payment Integration
+
+The architecture is already prepared for real payment gateways.
+
+Future flow:
+
+Student clicks Buy
+→ Redirect to payment gateway
+→ Gateway webhook verifies payment
+→ Purchase becomes completed
+→ Enrollment is created
+
+Important:
+
+The existing business logic will NOT need to be rewritten later.
+
+Only the payment provider integration layer will be added.
+
+Frontend Purchase Experience
+Course Cards
+
+Each course card now includes:
+
+Course details button
+Purchase button
+Purchase Modal Behavior
+
+When clicking:
+
+Buy Course
+
+The student sees two options:
+
+Option 1 — Redeem Access Code
+
+Student enters:
+
+Activation code
+
+Frontend calls:
+
+POST /api/access-codes/redeem/
+Option 2 — Online Purchase
+
+Frontend calls:
+
+POST /api/purchases/create/
+
+Then temporarily:
+
+POST /api/purchases/{id}/complete/
+
+This simulates successful payment until a real gateway is integrated later.
+
+Dynamic Course Ownership
+
+The frontend receives:
+
+has_access
+
+inside the Course API response.
+
+Example:
+
+{
+  "has_access": true
+}
+
+This allows the frontend to:
+
+Hide Buy button
+Show "You Own This Course"
+
+without additional requests.
+
+Frontend Dashboard System
+
+The platform now includes dashboard architecture for:
+
+StudentDashboard
+TeacherDashboard
+AdminDashboard
+
+Purpose:
+
+Separate responsibilities between user roles.
+
+Student Dashboard
+
+Student dashboard displays:
+
+My Courses
+
+Courses are retrieved from:
+
+GET /api/enrollments/my-courses/
+Reusable Frontend Architecture
+
+The frontend uses reusable components:
+
+CourseCard.tsx
+CourseGrid.tsx
+
+This follows the:
+
+DRY Principle
+(Don't Repeat Yourself)
+
+Benefits:
+
+Cleaner code
+Easier maintenance
+Reusable UI
+Consistent design
+Frontend Security
+
+Authentication tokens are stored in:
+
+localStorage
+
+Axios automatically attaches:
+
+Authorization: Bearer TOKEN
+
+Protected operations require authentication.
+
+Examples:
+
+Redeem code
+Purchase course
+View my courses
+Frontend UX Enhancements
+
+The frontend includes:
+
+Responsive design
+Loading states
+Error handling
+Purchase state updates
+Dynamic ownership display
+Inline activation form
+Modern Tailwind CSS UI
+Important Developer Notes
+
+Always:
+
+Use CourseEnrollment for access checks
+Use transaction.atomic for critical operations
+Prevent duplicate purchases
+Prevent duplicate enrollments
+Use Django ORM only
+Keep payment providers separated from business logic
+
+Never:
+
+Grant access directly from payment gateway logic
+Duplicate access logic across the platform
+Store payment logic inside frontend
+Architecture Philosophy
+
+The system is designed to:
+
+Keep business logic centralized
+Prevent duplicated ownership
+Support future payment gateways
+Support offline code distribution
+Maintain scalability
+Maintain auditability
+Separate access control from payment providers
+Prepare the platform for production-scale growth

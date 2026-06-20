@@ -1,0 +1,937 @@
+# X Platform - Lessons, Video System, and Advanced Streaming Security Documentation
+
+# Project Overview
+
+X Platform is an advanced e-learning platform designed initially for Jordanian Tawjihi students.
+
+The platform currently focuses on Arabic and English subjects, with future support for additional educational categories and scalable course structures.
+
+This stage introduces the complete Lessons System, Protected Video Streaming Architecture, Mux Video Integration, Signed Playback Security, and the foundation for DRM-protected streaming.
+
+---
+
+# Lessons System
+
+## Overview
+
+The Lessons system is designed to organize educational content inside courses.
+
+Each course can contain multiple lessons.
+
+Lessons are displayed in a dedicated Course Lessons page that includes:
+
+- Sidebar lesson navigation
+- Video player
+- Lesson details
+- Lesson resources/files
+- Video security system
+- Protected access control
+
+---
+
+# Lesson Structure
+
+Each lesson contains:
+
+- Course relation
+- Title
+- Description
+- Video provider
+- Video asset ID
+- Video playback ID
+- Thumbnail
+- Order number
+- Duration
+- Preview status
+- Published status
+- Created date
+- Updated date
+
+---
+
+# Database
+
+## Table: lessons_lesson
+
+Fields:
+
+- id
+- course_id
+- title
+- description
+- video_provider
+- video_asset_id
+- video_playback_id
+- thumbnail
+- order
+- duration
+- is_preview
+- is_published
+- created_at
+- updated_at
+
+---
+
+# Video Providers
+
+The system was designed to support multiple video providers.
+
+Supported providers:
+
+- mux
+- bunny
+- youtube
+
+Current production provider:
+
+- Mux
+
+---
+
+# Lesson Ordering System
+
+Lessons are ordered using:
+
+```python
+ordering = ["order"]
+```
+
+Each lesson order must be unique inside the course.
+
+Rule:
+
+```python
+unique_together = ("course", "order")
+```
+
+This guarantees:
+
+- Stable lesson ordering
+- Predictable navigation
+- Proper course structure
+
+---
+
+# Lesson Publishing System
+
+Lessons support publishing control.
+
+Field:
+
+```python
+is_published
+```
+
+Rules:
+
+Published lessons:
+
+- Visible to enrolled students
+- Visible in CourseLessons page
+
+Unpublished lessons:
+
+- Hidden from students
+- Still manageable by admins/teachers
+
+---
+
+# Preview Lessons System
+
+Lessons support free preview mode.
+
+Field:
+
+```python
+is_preview
+```
+
+Preview lessons:
+
+- Accessible publicly
+- Can be viewed without enrollment
+
+Non-preview lessons:
+
+- Require valid course access
+
+---
+
+# Lesson Resources System
+
+Each lesson can contain downloadable resources.
+
+Examples:
+
+- PDFs
+- Images
+- Homework
+- Attachments
+- Notes
+- ZIP files
+
+---
+
+# Database
+
+## Table: lessons_lessonresource
+
+Fields:
+
+- id
+- lesson_id
+- title
+- file
+- description
+- uploaded_by
+- created_at
+
+---
+
+# Lesson Access Control
+
+The system uses strict access validation.
+
+Students can only access lessons if:
+
+- The course is purchased
+  OR
+- The user redeemed a valid access code
+  OR
+- The lesson is marked as preview
+
+Admins:
+
+- Full access
+
+Teachers:
+
+- Access to their own course lessons
+
+---
+
+# Course Enrollment Validation
+
+The backend verifies lesson access using:
+
+```python
+CourseEnrollment
+```
+
+Checks include:
+
+- Enrollment existence
+- Active enrollment status
+- User role
+- Teacher ownership
+
+---
+
+# Available Lesson APIs
+
+## Public Preview APIs
+
+Get preview lessons:
+
+```text
+GET /api/courses/{course_id}/preview-lessons/
+```
+
+Get single lesson:
+
+```text
+GET /api/lessons/{lesson_id}/
+```
+
+---
+
+# Protected Lesson APIs
+
+Get course lessons:
+
+```text
+GET /api/courses/{course_id}/lessons/
+```
+
+Create lesson:
+
+```text
+POST /api/courses/{course_id}/lessons/create/
+```
+
+Update lesson:
+
+```text
+PATCH /api/lessons/{lesson_id}/update/
+```
+
+Delete lesson:
+
+```text
+DELETE /api/lessons/{lesson_id}/delete/
+```
+
+---
+
+# Lesson Resources APIs
+
+Get lesson resources:
+
+```text
+GET /api/lessons/{lesson_id}/resources/
+```
+
+Add lesson resource:
+
+```text
+POST /api/lessons/{lesson_id}/resources/
+```
+
+Delete lesson resource:
+
+```text
+DELETE /api/resources/{resource_id}/delete/
+```
+
+---
+
+# Course Lessons Frontend Page
+
+## Page
+
+```text
+CourseLessons.tsx
+```
+
+---
+
+# CourseLessons UI Architecture
+
+The page includes:
+
+- Responsive sidebar
+- Lesson switching system
+- Secure video player
+- Loading states
+- Error handling
+- Resource section
+- Video lock handling
+
+---
+
+# Sidebar Lesson Navigation
+
+Lessons appear in a sidebar.
+
+Each lesson card includes:
+
+- Lesson order
+- Lesson title
+- Duration
+- Active lesson state
+- Video icon
+
+Features:
+
+- Smooth switching
+- Responsive design
+- Active lesson highlighting
+- Disabled state during loading
+
+---
+
+# Main Lesson Area
+
+The main lesson area includes:
+
+- Secure video player
+- Lesson information
+- Description
+- Resources
+- Security indicators
+
+---
+
+# Responsive Design
+
+The page uses:
+
+- Tailwind CSS
+- Grid layout
+- Mobile-first responsive behavior
+
+Desktop:
+
+- Sidebar + player layout
+
+Mobile:
+
+- Stacked layout
+
+---
+
+# Video Security Architecture
+
+This stage introduced advanced video security.
+
+The platform now contains:
+
+- Device restrictions
+- Session restrictions
+- Video lock system
+- Mux secure streaming
+- Signed playback tokens
+- Secure playback authorization
+
+---
+
+# Video Lock System
+
+## Overview
+
+The Video Lock system prevents simultaneous video watching across devices.
+
+Goal:
+
+- Prevent account sharing
+- Prevent multiple simultaneous viewers
+
+---
+
+# Video Lock Rules
+
+A user:
+
+- Can watch only one video session at a time
+
+If another device attempts playback:
+
+→ Playback is blocked
+
+---
+
+# Video Lock APIs
+
+Start video session:
+
+```text
+POST /api/security/video/start/
+```
+
+Stop video session:
+
+```text
+POST /api/security/video/stop/
+```
+
+Check video status:
+
+```text
+GET /api/security/video/status/
+```
+
+---
+
+# Frontend Video Lock Integration
+
+The frontend automatically:
+
+- Starts video lock when lesson opens
+- Stops lock when changing lessons
+- Stops lock when leaving the page
+- Stops lock when refreshing browser
+
+---
+
+# Browser Exit Handling
+
+The frontend uses:
+
+```javascript
+navigator.sendBeacon();
+```
+
+Purpose:
+
+- Ensure video lock cleanup
+- Prevent stuck sessions
+- Improve session reliability
+
+---
+
+# Video Lock User Experience
+
+If playback is blocked:
+
+The user sees:
+
+- Lock message
+- Error state
+- Friendly explanation
+
+Example:
+
+```text
+This account may already be watching a video on another device.
+```
+
+---
+
+# Mux Video Integration
+
+## Overview
+
+The platform integrates with:
+
+```text
+Mux Video
+```
+
+Mux provides:
+
+- Secure streaming
+- Adaptive streaming
+- Video processing
+- Playback infrastructure
+- Signed playback
+- DRM support foundation
+
+---
+
+# Why Mux Was Selected
+
+Mux was selected because:
+
+- Strong streaming infrastructure
+- Excellent React support
+- Modern API
+- Secure playback architecture
+- DRM compatibility
+- Educational platform compatibility
+
+---
+
+# Environment Configuration
+
+The backend uses:
+
+```env
+MUX_TOKEN_ID
+MUX_TOKEN_SECRET
+MUX_SIGNING_KEY_ID
+MUX_PRIVATE_KEY
+```
+
+All credentials are stored securely in:
+
+```text
+.env
+```
+
+Credentials are NEVER exposed to the frontend.
+
+---
+
+# Mux Service Layer
+
+## File
+
+```text
+courses/services/mux_service.py
+```
+
+Purpose:
+
+- Create video assets
+- Communicate with Mux API
+- Generate playback IDs
+
+---
+
+# Mux Asset Creation
+
+Videos are uploaded to Mux using:
+
+```python
+create_mux_asset()
+```
+
+The backend receives:
+
+- video URL
+
+Mux generates:
+
+- asset_id
+- playback_id
+- processing status
+
+---
+
+# Stored Video Fields
+
+The lesson stores:
+
+```python
+video_asset_id
+video_playback_id
+```
+
+This avoids storing raw video files locally.
+
+---
+
+# Upload Video API
+
+## Endpoint
+
+```text
+POST /api/courses/upload-video/
+```
+
+---
+
+# Upload Video Flow
+
+Teacher/Admin:
+
+- Sends lesson_id
+- Sends video URL
+
+Backend:
+
+- Validates permissions
+- Sends video to Mux
+- Receives playback information
+- Stores video data inside lesson
+
+---
+
+# Upload Permissions
+
+Allowed:
+
+- Admin
+- Course owner teacher
+
+Blocked:
+
+- Students
+- Unrelated teachers
+
+---
+
+# Secure Playback Architecture
+
+Initially:
+
+Videos used:
+
+```text
+Public Playback
+```
+
+Later upgraded to:
+
+```text
+Signed Playback
+```
+
+---
+
+# Signed Playback System
+
+## Overview
+
+Signed Playback prevents:
+
+- Direct video URL sharing
+- Unauthorized playback
+- External playback attempts
+
+Each playback requires:
+
+- Temporary signed token
+
+---
+
+# Playback Security Flow
+
+Frontend requests:
+
+```text
+GET /api/lessons/{lesson_id}/mux-token/
+```
+
+Backend:
+
+- Validates user access
+- Validates enrollment
+- Validates permissions
+- Generates signed JWT token
+
+Frontend:
+
+- Uses token with MuxPlayer
+
+---
+
+# Signed Token Generation
+
+## File
+
+```text
+courses/services/mux_signed_token.py
+```
+
+The system uses:
+
+```python
+jwt.encode()
+```
+
+Algorithm:
+
+```text
+RS256
+```
+
+---
+
+# Signed Playback Security Features
+
+Playback tokens include:
+
+- Playback ID
+- Expiration time
+- Audience validation
+- Signing key validation
+
+---
+
+# Token Expiration
+
+Playback tokens are temporary.
+
+Example duration:
+
+```text
+10 minutes
+```
+
+Benefits:
+
+- Reduced token reuse
+- Better playback security
+- Harder URL sharing
+
+---
+
+# Secure Frontend Video Player
+
+## Component
+
+```text
+MuxPlayer
+```
+
+Installed package:
+
+```text
+@mux/mux-player-react
+```
+
+---
+
+# Secure Player Features
+
+The player supports:
+
+- Signed playback
+- Adaptive bitrate streaming
+- Modern playback controls
+- Responsive layout
+- Metadata support
+
+---
+
+# Frontend Signed Playback Flow
+
+Frontend:
+
+1. Loads lesson
+2. Requests signed token
+3. Receives:
+   - playback_id
+   - token
+
+4. Passes token into MuxPlayer
+
+---
+
+# Current Video Security Layers
+
+The platform now includes:
+
+## Layer 1
+
+JWT Authentication
+
+## Layer 2
+
+Device Restrictions
+
+## Layer 3
+
+Single Active Session
+
+## Layer 4
+
+Video Lock System
+
+## Layer 5
+
+Protected Lesson Access
+
+## Layer 6
+
+Mux Secure Streaming
+
+## Layer 7
+
+Signed Playback Tokens
+
+---
+
+# Current Security Result
+
+The system now prevents:
+
+- Easy account sharing
+- Direct video link sharing
+- Unauthorized playback
+- Simultaneous viewing
+- Public access to paid content
+
+---
+
+# Frontend User Experience Improvements
+
+The CourseLessons page includes:
+
+- Modern loading states
+- Friendly error messages
+- Security state indicators
+- Smooth lesson switching
+- Clean educational UI
+
+---
+
+# Loading States
+
+Examples:
+
+```text
+Loading lessons...
+Preparing secure video...
+Activating video protection...
+```
+
+---
+
+# Security Indicators
+
+Examples:
+
+```text
+Video Lock Active
+Signed Mux Video
+```
+
+---
+
+# Important Developer Notes
+
+Never expose:
+
+- MUX_TOKEN_SECRET
+- MUX_PRIVATE_KEY
+- Signing credentials
+
+Frontend must NEVER generate playback tokens.
+
+Only backend generates signed playback tokens.
+
+---
+
+# Current System Limitations
+
+The current system still does NOT fully implement:
+
+- DRM protected playback
+- Black screen screen-recording protection
+- Dynamic watermark overlay
+- Direct teacher file uploads
+
+These are planned in the next stages.
+
+---
+
+# Future Planned Security Stages
+
+## DRM Protected Playback
+
+Purpose:
+
+- Black screen during screen recording
+- Hardware-level protection
+- Protected encrypted streaming
+
+---
+
+# Watermark System
+
+Planned watermark data:
+
+- Username
+- Email
+- Timestamp
+- Device ID
+
+Purpose:
+
+- Leak tracing
+- Camera recording deterrence
+
+---
+
+# Direct Video Upload System
+
+Future upload flow:
+
+```text
+Teacher Device
+→ Direct Upload
+→ Mux
+→ Django verification
+```
+
+Benefits:
+
+- Faster uploads
+- Reduced backend load
+- Better scalability
+
+---
+
+# System Design Philosophy
+
+The Lessons and Video Security system was designed to:
+
+- Protect educational content
+- Reduce piracy
+- Prevent account sharing
+- Improve scalability
+- Provide modern streaming architecture
+- Build enterprise-level educational infrastructure
+- Prepare the platform for DRM-level security

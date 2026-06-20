@@ -1,0 +1,470 @@
+X Platform – Complete Project Summary
+Overview
+
+X Platform is a modern e-learning platform initially designed for Jordanian Tawjihi students.
+
+The system is built around three user roles:
+
+Admin
+Teacher
+Student
+
+The platform includes:
+
+Authentication & Security System
+Subjects System
+Courses System
+Lessons System
+Video Streaming System
+Enrollment & Access Control
+Admin Dashboard
+Teacher Dashboard
+Student Dashboard
+AI Educational Assistant
+Technology Stack
+Frontend
+React
+TypeScript
+React Router
+Axios
+Backend
+Django
+Django REST Framework
+PostgreSQL
+JWT Authentication
+User Roles
+Student
+
+Permissions:
+
+Register account
+Login
+Access enrolled courses
+Watch lessons
+Use AI assistant
+Update profile
+
+Cannot:
+
+Create courses
+Edit educational content
+Access dashboards of other roles
+Teacher
+
+Permissions:
+
+Manage own courses
+Manage lessons
+Upload videos
+Upload resources
+Update profile
+
+Cannot:
+
+Manage platform settings
+Access admin functions
+Admin
+
+Full access to:
+
+Users
+Teachers
+Students
+Subjects
+Courses
+Lessons
+Videos
+Access Codes
+Purchases
+Enrollments
+Devices
+Sessions
+Statistics
+Authentication System
+Registration
+
+Users register using:
+
+First Name
+Last Name
+Username
+Email or Phone
+Password
+Password Confirmation
+
+Default role:
+
+student
+
+Only admins can assign:
+
+teacher
+admin
+Password Security
+
+Passwords are never stored as plain text.
+
+Django uses:
+
+PBKDF2
+
+with unique salt for every password.
+
+JWT Authentication
+
+Authentication uses:
+
+Access Token
+Refresh Token
+
+Architecture:
+
+Access Token
+Short Lifetime
+
+Refresh Token
+Long Lifetime
+Advanced Token Security
+
+The system implements:
+
+Refresh Token Rotation
+
+Every refresh operation:
+
+Old Refresh Token → Invalid
+New Refresh Token → Issued
+Token Blacklisting
+
+Invalidated tokens are added to blacklist.
+
+Used for:
+
+Logout
+Session termination
+Security protection
+Device Tracking System
+
+Every login request sends:
+
+x-device-id
+x-device-name
+
+Device ID is generated on frontend and stored in:
+
+localStorage
+Device Database
+
+Table:
+
+security_device
+
+Stores:
+
+device_id
+device_name
+ip_address
+user_agent
+last_login_at
+is_active
+Session Tracking System
+
+Table:
+
+security_usersession
+
+Stores:
+
+user
+device
+refresh_token
+ip_address
+user_agent
+created_at
+last_seen_at
+is_active
+Session Rules
+
+Maximum devices:
+
+2
+
+Maximum active sessions:
+
+1
+
+Behavior:
+
+Same device login
+
+Old session is closed.
+
+New session is created.
+
+Login allowed.
+
+Different device login
+
+If another active session exists:
+
+Login blocked
+
+Purpose:
+
+Prevent account sharing
+User Table
+
+Table:
+
+users_user
+
+Fields:
+
+id
+username
+email
+phone
+first_name
+last_name
+password
+role
+profile_image
+bio
+created_at
+updated_at
+is_active
+is_staff
+is_superuser
+Academic Structure
+
+Hierarchy:
+
+Subject
+ └── Course
+      └── Lesson
+           ├── Video
+           └── Resources
+Subjects System
+
+Examples:
+
+Arabic
+English
+
+Table:
+
+subjects_subject
+
+Fields:
+
+id
+name
+slug
+image
+created_at
+updated_at
+
+Permissions:
+
+View      → Public
+Create    → Admin Only
+Update    → Admin Only
+Delete    → Admin Only
+Courses System
+
+Every course belongs to a subject.
+
+Course contains:
+
+Title
+Description
+Thumbnail
+Teacher
+Price
+Status
+
+Relationships:
+
+Subject
+ └── Courses
+Enrollment System
+
+Students gain access through:
+
+Purchase
+Access Code
+Admin Grant
+Free Course
+
+All methods create:
+
+CourseEnrollment
+Access Codes
+
+Used to grant course access.
+
+Can be:
+
+Single Use
+Multi Use
+
+Managed by Admin.
+
+Lessons System
+
+Courses contain lessons.
+
+Lessons contain:
+
+Video
+Resources
+Attachments
+
+Supports:
+
+Preview Lessons
+Locked Lessons
+Sequential Learning
+Video System
+
+Video infrastructure is based on:
+
+Mux
+
+Features:
+
+Video Upload
+Streaming
+Playback
+Asset Management
+Advanced Streaming Security
+
+Security includes:
+
+Signed Playback URLs
+Protected Streams
+Authorization Validation
+
+Designed to reduce unauthorized access.
+
+Public Website
+
+Includes:
+
+Home Page
+Subjects Page
+Courses Pages
+Authentication Pages
+
+Shared components:
+
+Navbar
+Footer
+
+Navigation changes based on:
+
+Guest
+Student
+Teacher
+Admin
+Admin Dashboard
+
+Location:
+
+src/dashboard/admin
+
+Modules:
+
+Users
+Teachers
+Students
+Subjects
+Courses
+Lessons
+Videos
+Enrollments
+Access Codes
+Sessions
+Devices
+Statistics
+
+Features:
+
+CRUD Operations
+Role Protection
+Analytics
+System Management
+Teacher Dashboard
+
+Location:
+
+src/dashboard/teacher
+
+Features:
+
+Course Management
+Lesson Management
+Video Management
+Resources Management
+Profile Management
+
+Teachers only manage their own content.
+
+Student Dashboard
+
+Location:
+
+src/dashboard/student
+
+Features:
+
+Overview
+My Courses
+Profile
+Course Access
+Lesson Access
+
+Students cannot manage educational content.
+
+AI Assistant
+
+The assistant is course-specific.
+
+It is not a general chatbot.
+
+Purpose:
+
+Answer course-related questions
+Generate examples
+Generate exercises
+Generate quizzes
+Explain lessons
+
+Future architecture supports:
+
+RAG
+Knowledge Retrieval
+Cost Tracking
+Usage Tracking
+
+Assistant only responds using course content.
+
+Current Project Status
+
+The documented architecture includes:
+
+Authentication
+Security
+Subjects
+Courses
+Enrollments
+Access Codes
+Lessons
+Video Streaming
+Public Website
+Admin Dashboard
+Teacher Dashboard
+Student Dashboard
+AI Assistant
+
+The platform architecture is already structured as a scalable commercial e-learning system and is prepared for future expansion.

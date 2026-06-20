@@ -1,0 +1,842 @@
+# X Platform – AI Assistant System Documentation
+
+## Project Overview
+
+X Platform is an advanced e-learning platform designed initially for Jordanian Tawjihi students.
+
+The platform supports:
+
+- Students
+- Teachers
+- Admins
+
+The system currently includes:
+
+- Authentication and Security System
+- Courses and Lessons
+- Video Protection and Session Control
+- Internal Purchase System
+- Access Codes
+- Video Streaming Integration
+- AI Assistant System
+
+The AI Assistant was designed to become a course-specific educational assistant that helps students understand course material while remaining fully restricted to the scientific content provided by the course creator.
+
+---
+
+# AI Assistant System Overview
+
+The platform now includes a fully integrated AI Assistant system.
+
+The assistant:
+
+- Works only inside purchased courses
+- Uses only the course material provided by the teacher/admin
+- Refuses unrelated questions
+- Generates:
+  - Answers
+  - Quizzes
+  - Exercises
+  - Examples
+
+- Logs AI usage and token consumption
+- Supports scientific material uploads through files
+
+The system was intentionally designed to support future RAG upgrades without rebuilding the architecture.
+
+---
+
+# AI Assistant Goals
+
+The AI Assistant system was designed with several important goals:
+
+## Educational Restriction
+
+The assistant must answer ONLY using the course material.
+
+It must NOT:
+
+- Use unrelated knowledge
+- Answer questions outside the course
+- Use information from other courses
+- Generate fabricated information
+
+---
+
+## Cost Protection
+
+The platform owner should not pay AI costs for unauthorized users.
+
+Therefore:
+
+- Only enrolled students can access the assistant
+- Teachers can access their own course assistant
+- Admins can access all assistants
+
+---
+
+## Future Scalability
+
+The architecture was designed to later support:
+
+- RAG
+- Vector databases
+- Semantic search
+- Embeddings
+- AI memory systems
+- Analytics
+
+without rebuilding the assistant from scratch.
+
+---
+
+# OpenAI Integration
+
+The platform uses OpenAI API integration.
+
+## Model Configuration
+
+The backend currently uses:
+
+```text
+OPENAI_MODEL=gpt-4o-mini
+```
+
+The API key is stored securely inside:
+
+```text
+.env
+```
+
+Example:
+
+```env
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
+OPENAI_MODEL=gpt-4o-mini
+```
+
+The API key is NEVER exposed to the frontend.
+
+All AI requests are handled through Django backend APIs.
+
+---
+
+# AI Backend Architecture
+
+A dedicated Django application was created:
+
+```text
+ai_assistant
+```
+
+The application contains:
+
+- Models
+- Serializers
+- Views
+- URLs
+- Services
+- File extraction logic
+- OpenAI integration
+
+---
+
+# Installed Libraries
+
+The following libraries were installed:
+
+## OpenAI
+
+```bash
+pip install openai
+```
+
+Used for:
+
+- AI generation
+- Quizzes
+- Exercises
+- Examples
+
+---
+
+## PyMuPDF
+
+```bash
+pip install PyMuPDF
+```
+
+Used for:
+
+- PDF text extraction
+
+---
+
+## python-docx
+
+```bash
+pip install python-docx
+```
+
+Used for:
+
+- DOCX text extraction
+
+---
+
+# AI Database Models
+
+## CourseAIKnowledge
+
+Stores the main scientific material used by the assistant.
+
+### Fields
+
+```python
+course
+content
+instructions
+is_active
+created_at
+updated_at
+```
+
+### Purpose
+
+This model acts as the assistant's main knowledge source.
+
+The assistant ONLY answers using this material.
+
+---
+
+## AIUsageLog
+
+Tracks AI usage and token consumption.
+
+### Fields
+
+```python
+user
+course
+action
+prompt_tokens
+completion_tokens
+total_tokens
+created_at
+```
+
+### Actions
+
+```text
+ask
+quiz
+examples
+exercises
+```
+
+### Purpose
+
+This model allows:
+
+- Usage tracking
+- Cost monitoring
+- Future analytics
+- Abuse prevention
+- Future rate limiting
+
+---
+
+## CourseAIKnowledgeFile
+
+Stores uploaded scientific material files.
+
+### Fields
+
+```python
+course
+knowledge
+file
+original_filename
+extracted_text
+uploaded_by
+created_at
+```
+
+### Purpose
+
+Allows:
+
+- Uploading PDFs
+- Uploading DOCX files
+- Uploading TXT files
+- Extracting text automatically
+- Saving original files
+- Future RAG integration
+- Material management
+
+---
+
+# AI Permissions System
+
+The AI Assistant uses strict permission checks.
+
+---
+
+## Student Access Rules
+
+Students can use the assistant ONLY if:
+
+```text
+They have an active enrollment in the course
+```
+
+Otherwise:
+
+```text
+403 Forbidden
+```
+
+is returned.
+
+---
+
+## Teacher Access Rules
+
+Teachers can:
+
+- Manage AI material
+- Upload files
+- Use the assistant
+
+ONLY for courses they own.
+
+---
+
+## Admin Access Rules
+
+Admins have full access.
+
+---
+
+# AI Assistant Restrictions
+
+The assistant was intentionally restricted.
+
+## Important Rules
+
+The assistant:
+
+- Answers ONLY from course material
+- Refuses unrelated questions
+- Does NOT use external knowledge intentionally
+- Does NOT answer from other courses
+- Does NOT invent information
+
+---
+
+## System Prompt Rules
+
+The backend sends a strict system prompt to OpenAI.
+
+The rules include:
+
+```text
+1. Answer only using the provided course material.
+2. Never use outside knowledge.
+3. Reject unrelated questions.
+4. Never invent information.
+5. Keep answers concise and educational.
+```
+
+---
+
+# AI Features
+
+## Ask Questions
+
+Students can ask questions related to the course.
+
+Example:
+
+```text
+اشرح المضارع البسيط
+```
+
+The assistant answers only from the provided material.
+
+---
+
+## Quiz Generation
+
+Students can request:
+
+```text
+اعمل اختبار من 5 أسئلة
+```
+
+The assistant generates quizzes ONLY from the course content.
+
+---
+
+## Exercises Generation
+
+Students can request exercises.
+
+The assistant generates practice material from the scientific content.
+
+---
+
+## Examples Generation
+
+Students can request examples.
+
+The assistant creates examples based on the uploaded material.
+
+---
+
+# AI File Upload System
+
+The platform now supports scientific material uploads.
+
+---
+
+## Supported File Types
+
+The current version supports:
+
+```text
+PDF
+DOCX
+TXT
+```
+
+---
+
+## Upload Flow
+
+The flow works as follows:
+
+```text
+Teacher/Admin uploads file
+↓
+Django receives file
+↓
+Text extraction service runs
+↓
+Extracted text is cleaned
+↓
+Text is appended to CourseAIKnowledge
+↓
+Original file is saved
+```
+
+---
+
+## File Text Extraction
+
+A dedicated extraction service was created:
+
+```text
+ai_assistant/services/file_text_extractor.py
+```
+
+The service:
+
+- Detects file type
+- Extracts text
+- Cleans invalid characters
+- Returns safe text
+
+---
+
+## PostgreSQL NUL Character Fix
+
+During implementation, PostgreSQL raised the error:
+
+```text
+ValueError: A string literal cannot contain NUL (0x00) characters.
+```
+
+Cause:
+
+Some uploaded files contained hidden null characters.
+
+Solution:
+
+A cleaning layer was added:
+
+```python
+text.replace("\x00", "")
+```
+
+before saving extracted text.
+
+---
+
+# AI APIs
+
+The backend exposes several APIs.
+
+---
+
+## AI Knowledge Management
+
+### GET
+
+```http
+GET /api/courses/{course_id}/ai-knowledge/
+```
+
+Returns AI material.
+
+---
+
+### PATCH
+
+```http
+PATCH /api/courses/{course_id}/ai-knowledge/
+```
+
+Updates AI material.
+
+---
+
+## AI Question Endpoint
+
+### POST
+
+```http
+POST /api/courses/{course_id}/ai/ask/
+```
+
+Allows students to ask questions.
+
+---
+
+## Quiz Generation Endpoint
+
+### POST
+
+```http
+POST /api/courses/{course_id}/ai/quiz/
+```
+
+Generates quizzes.
+
+---
+
+## Exercises Endpoint
+
+### POST
+
+```http
+POST /api/courses/{course_id}/ai/exercises/
+```
+
+Generates exercises.
+
+---
+
+## Examples Endpoint
+
+### POST
+
+```http
+POST /api/courses/{course_id}/ai/examples/
+```
+
+Generates examples.
+
+---
+
+## File Upload Endpoint
+
+### POST
+
+```http
+POST /api/courses/{course_id}/ai-knowledge/upload-file/
+```
+
+Accepts:
+
+```text
+multipart/form-data
+```
+
+with:
+
+```text
+file
+```
+
+---
+
+# OpenAI Request Configuration
+
+The assistant uses optimized request settings.
+
+Example:
+
+```python
+temperature=0.3
+max_output_tokens=700
+```
+
+---
+
+## Why temperature=0.3?
+
+This reduces:
+
+- Hallucinations
+- Randomness
+- Unstable answers
+
+while keeping educational quality.
+
+---
+
+## Why max_output_tokens?
+
+This prevents:
+
+- Huge responses
+- High token costs
+- Excessive usage
+
+---
+
+# AI Frontend Integration
+
+The frontend was fully integrated.
+
+---
+
+# AI API Layer
+
+A dedicated frontend API file was created:
+
+```text
+src/api/ai.ts
+```
+
+Contains:
+
+- askCourseAI
+- generateCourseQuiz
+- generateCourseExercises
+- generateCourseExamples
+
+---
+
+# AI Knowledge Frontend API
+
+Another API layer was created:
+
+```text
+src/api/aiKnowledge.ts
+```
+
+Contains:
+
+- getCourseAIKnowledge
+- saveCourseAIKnowledge
+- uploadCourseAIKnowledgeFile
+
+---
+
+# Course AI Assistant Component
+
+A reusable React component was created:
+
+```text
+CourseAIAssistantBox.tsx
+```
+
+The component includes:
+
+- Question input
+- Quiz button
+- Exercises button
+- Examples button
+- Loading states
+- Error handling
+- Results history
+
+---
+
+# AI Assistant Placement
+
+The assistant was integrated directly inside:
+
+```text
+CourseLessons.tsx
+```
+
+The assistant appears:
+
+```text
+Below the lesson video
+```
+
+This ensures:
+
+- Natural educational workflow
+- Context-aware learning
+- Course-specific interaction
+
+---
+
+# AI Knowledge Management Page
+
+A dedicated dashboard page was created:
+
+```text
+EditCourseAIKnowledge.tsx
+```
+
+This page allows:
+
+- Writing scientific material
+- Uploading files
+- Managing instructions
+- Activating/deactivating assistant
+
+---
+
+# Upload Interface Features
+
+The dashboard upload system supports:
+
+- File selection
+- Upload loading state
+- Success state
+- Error state
+- Automatic textarea updates
+
+---
+
+# Admin Dashboard Integration
+
+A new admin route was added:
+
+```text
+/admin/courses/:courseId/ai-knowledge
+```
+
+A dashboard button was also added:
+
+```text
+Manage AI Material
+```
+
+inside course management pages.
+
+---
+
+# AI Testing
+
+The assistant was tested using:
+
+- Thunder Client
+- Frontend integration
+- File uploads
+- API endpoints
+
+---
+
+# Known Requirement
+
+The OpenAI API requires:
+
+```text
+Billing Activation
+```
+
+without billing, AI requests return:
+
+```text
+500 Internal Server Error
+```
+
+because OpenAI refuses generation requests.
+
+---
+
+# Current AI System Status
+
+The AI system is now considered:
+
+```text
+Architecturally Complete
+```
+
+The platform now includes:
+
+- Course-specific AI
+- AI content management
+- File uploads
+- OpenAI integration
+- Usage logging
+- Permission protection
+- Frontend assistant
+- Educational restrictions
+
+---
+
+# Future AI Improvements
+
+The architecture was intentionally prepared for future upgrades.
+
+Future planned upgrades include:
+
+## RAG
+
+Retrieval-Augmented Generation.
+
+---
+
+## pgvector
+
+Vector database support for embeddings.
+
+---
+
+## Embeddings
+
+Semantic vector representations.
+
+---
+
+## Semantic Search
+
+Relevant chunk retrieval.
+
+---
+
+## AI Memory
+
+Conversation continuity.
+
+---
+
+## AI Analytics
+
+Advanced usage monitoring.
+
+---
+
+# Final Result
+
+The platform is no longer a simple CRUD educational project.
+
+The project now contains:
+
+- Production-level architecture
+- Advanced security systems
+- Course-based AI assistance
+- Protected educational workflows
+- Scalable AI infrastructure
+- Real educational platform patterns
+
+The AI Assistant system is now fully integrated into X Platform and ready for future production deployment.

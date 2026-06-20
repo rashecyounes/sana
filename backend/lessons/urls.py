@@ -1,0 +1,60 @@
+from django.urls import path
+from .views import (
+    PreviewLessonsView,
+    CourseLessonsView,
+    LessonDetailView,
+    CreateLessonView,
+    UpdateLessonView,
+    DeleteLessonView,
+    LessonResourcesView,
+    DeleteLessonResourceView,
+    mux_lesson_token,
+)
+
+urlpatterns = [
+    path(
+        "courses/<int:course_id>/preview-lessons/",
+        PreviewLessonsView.as_view(),
+        name="preview-lessons",
+    ),
+    path(
+        "courses/<int:course_id>/lessons/",
+        CourseLessonsView.as_view(),
+        name="course-lessons",
+    ),
+    path(
+        "lessons/<int:lesson_id>/",
+        LessonDetailView.as_view(),
+        name="lesson-detail",
+    ),
+    path(
+        "courses/<int:course_id>/lessons/create/",
+        CreateLessonView.as_view(),
+        name="create-lesson",
+    ),
+    path(
+        "lessons/<int:lesson_id>/update/",
+        UpdateLessonView.as_view(),
+        name="update-lesson",
+    ),
+    path(
+        "lessons/<int:lesson_id>/delete/",
+        DeleteLessonView.as_view(),
+        name="delete-lesson",
+    ),
+    path(
+        "lessons/<int:lesson_id>/resources/",
+        LessonResourcesView.as_view(),
+        name="lesson-resources",
+    ),
+    path(
+        "lesson-resources/<int:resource_id>/delete/",
+        DeleteLessonResourceView.as_view(),
+        name="delete-lesson-resource",
+    ),
+    path(
+    "lessons/<int:lesson_id>/mux-token/",
+    mux_lesson_token,
+    name="mux-lesson-token",
+    ),
+]

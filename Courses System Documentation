@@ -1,0 +1,369 @@
+X Platform - Courses System Documentation
+Overview
+
+The Courses System is designed to organize educational content inside subjects.
+
+Each subject can contain multiple courses, and each course belongs to one specific subject.
+
+The system supports:
+
+Admin-created courses
+Teacher-created courses
+Course resources/files
+Published/unpublished course visibility
+Future integration with lessons, access codes, and payments
+
+The system is designed to scale later into a full paid educational platform.
+
+Course Creation Policy
+
+Courses can be created by:
+
+Admin users
+Teacher users
+
+Students are NOT allowed to create or manage courses.
+
+Teacher Assignment Rules
+Admin Behavior
+
+If an Admin creates a course:
+
+→ Admin must choose the teacher responsible for the course
+
+This allows centralized management of courses and teachers.
+
+Teacher Behavior
+
+If a Teacher creates a course:
+
+→ The teacher is automatically assigned as the course teacher
+
+Teachers cannot assign another teacher to their own course.
+
+Course Structure
+
+Each course contains:
+
+Subject
+Teacher
+Created by
+Title
+Description
+Image
+Price
+Published status
+Created date
+Updated date
+Database
+
+The system uses PostgreSQL.
+
+Main Course Table
+courses_course
+
+Fields:
+
+id
+subject_id
+teacher_id
+created_by_id
+title
+description
+image
+price
+is_published
+created_at
+updated_at
+Important Relationships
+Subject → Courses
+
+One subject can contain multiple courses.
+
+Example:
+
+Arabic Subject
+  ├── Grammar Course
+  ├── Literature Course
+  └── Writing Skills Course
+Teacher → Courses
+
+One teacher can teach multiple courses.
+
+Course Visibility Rules
+Public Users / Students
+
+Can only see:
+
+Published courses
+Admins / Teachers
+
+Can:
+
+Create courses
+Edit courses
+Upload resources
+Manage publishing status
+Course Publishing System
+
+Each course contains:
+
+is_published
+
+Purpose:
+
+Hide unfinished courses
+Prepare courses before release
+Control public visibility
+Course Resources System
+
+The platform supports:
+
+General course resources
+
+Examples:
+
+PDF references
+Exercises
+Training files
+Exams
+Notes
+
+These resources belong to the course itself.
+
+Important Architecture Separation
+Course Resources
+CourseResource
+
+Used for:
+
+General course files
+Lesson Resources (Future)
+LessonResource
+
+Will be used later for:
+
+Files attached to specific lessons
+Why This Separation Is Important
+
+This architecture prevents confusion between:
+
+Files for the whole course
+Files for individual lessons
+
+This improves:
+
+Scalability
+Clean database design
+Future maintainability
+Course Resources Table
+courses_courseresource
+
+Fields:
+
+id
+course_id
+title
+file
+description
+uploaded_by_id
+created_at
+Course Resource Rules
+Resources can belong to only ONE course
+Resources are uploaded by:
+Admin
+Teacher
+Files are stored inside:
+/media/course_resources/
+Course Images
+
+Course images are supported using:
+
+ImageField
+
+Stored inside:
+
+/media/courses/
+
+Frontend automatically builds full image URLs.
+
+Price System
+
+Each course contains:
+
+price
+
+Implemented using:
+
+DecimalField
+
+Purpose:
+
+Accurate money handling
+Avoid floating point precision issues
+Course Ownership Logic
+
+The system stores:
+
+teacher
+
+AND
+
+created_by
+
+Why?
+
+Because:
+
+Admin may create the course
+BUT another teacher teaches it
+
+This separation improves:
+
+Management flexibility
+Audit tracking
+Future analytics
+API Endpoints
+Get all courses
+GET /api/courses/
+Get courses by subject
+GET /api/courses/?subject={subject_slug}
+
+Example:
+
+GET /api/courses/?subject=arabic
+Get single course
+GET /api/courses/{id}/
+Create course
+POST /api/courses/
+
+Allowed:
+
+Admin
+Teacher
+Update course
+PATCH /api/courses/{id}/
+Delete course
+DELETE /api/courses/{id}/
+API Filtering Behavior
+
+The API supports database-level filtering.
+
+Example:
+
+subject=arabic
+
+This ensures:
+
+Better scalability
+Faster queries
+Cleaner frontend logic
+Frontend Pages
+Subjects.tsx
+
+Displays:
+
+All subjects
+Subject search
+Subject cards
+SubjectCourses.tsx
+
+Displays:
+
+Courses for a selected subject
+Course cards
+Teacher name
+Price
+Course image
+Frontend Behavior
+Subject Navigation
+
+User flow:
+
+Subjects Page
+→ Click Subject
+→ Subject Courses Page
+
+Example route:
+
+/subjects/arabic/courses
+Course Cards
+
+Each course card displays:
+
+Course image
+Course title
+Short description
+Teacher name
+Course price
+Navbar Behavior
+
+Guest users:
+
+Login
+Register
+
+Authenticated users:
+
+Profile button
+User name
+UI/UX Enhancements
+
+The frontend includes:
+
+Modern responsive layout
+Tailwind CSS design
+Loading states
+Error handling
+Clean card-based UI
+Responsive navigation
+Media System
+
+The system supports:
+
+Course images
+Course files/resources
+
+Development setup includes:
+
+MEDIA_URL
+MEDIA_ROOT
+
+Django serves media files locally during development.
+
+Security Notes
+Students cannot create courses
+Teachers cannot assign another teacher
+Admin controls publishing visibility
+Django ORM is used everywhere
+No raw SQL queries are used
+Architecture Philosophy
+
+The Courses System is designed to:
+
+Organize educational content clearly
+Separate responsibilities cleanly
+Support future lessons integration
+Support paid course access later
+Scale into a production educational platform
+Future Integration
+
+The system is already prepared for:
+
+Lessons System
+Lesson Resources
+Access Codes
+Online Payments
+Course Enrollment
+Student Progress Tracking
+Teacher Dashboards
+Development Philosophy
+
+The system prioritizes:
+
+Clean architecture
+Scalability
+Security
+Clear separation of concerns
+Maintainability
+Production-ready design

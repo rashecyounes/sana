@@ -1,0 +1,773 @@
+X Platform - Teacher Dashboard System Documentation
+Project Overview
+
+X Platform is an advanced e-learning platform designed initially for Jordanian Tawjihi students.
+
+The platform currently focuses on Arabic and English subjects, with future support for scalable educational systems, advanced streaming protection, AI-powered educational assistance, and multi-role dashboard architecture.
+
+This stage introduces the complete Teacher Dashboard System, Teacher Course Management Architecture, Lesson Management System, Video Management Infrastructure, Teacher Profile System, and role-isolated teacher permissions.
+
+Teacher Dashboard Overview
+Purpose
+
+The Teacher Dashboard was designed to provide teachers with a fully isolated management environment.
+
+Teachers can:
+
+Manage their own courses
+Manage lessons
+Upload and connect videos
+Manage lesson resources
+Edit profile information
+Change account password
+Monitor course content
+
+Teachers CANNOT:
+
+Access admin-only management systems
+Manage other teachers' courses
+Access global platform administration
+Manage users outside their permissions
+Teacher Dashboard Architecture
+Frontend Structure
+
+The frontend uses a fully separated dashboard structure.
+
+Main path:
+
+text
+src/dashboard/teacher/
+
+Dashboard Structure
+
+The dashboard includes:
+
+Teacher layout system
+Sidebar navigation
+Responsive navbar
+Overview page
+Courses management
+Lessons management
+Videos management
+Teacher profile management
+Teacher Dashboard Layout
+Files
+
+text
+TeacherLayout.tsx
+TeacherSidebar.tsx
+TeacherNavbar.tsx
+
+Layout Responsibilities
+
+The layout system handles:
+
+Sidebar rendering
+Responsive dashboard structure
+Navigation
+Role-based links
+User profile display
+Mobile responsiveness
+Teacher Sidebar
+
+The sidebar includes links for:
+
+Overview
+Courses
+Lessons
+Videos
+Profile
+Teacher Navbar
+
+The navbar includes:
+
+Teacher profile image
+Teacher username
+Home navigation
+Responsive menu behavior
+Profile Image System
+
+The navbar automatically displays:
+
+Teacher uploaded profile image
+
+Fallback:
+
+Default user icon
+Dynamic Dashboard Navigation
+
+The homepage profile image now supports dynamic role navigation.
+
+Rules:
+
+Admin:
+
+→ Redirect to Admin Dashboard
+
+Teacher:
+
+→ Redirect to Teacher Dashboard
+
+Student:
+
+→ Redirect to Student Dashboard
+
+This replaced the old admin-only navigation behavior.
+
+Teacher Dashboard Routes
+Protected Teacher Routes
+
+The frontend uses:
+
+text
+ProtectedRoute.tsx
+
+Role validation:
+
+typescript
+requiredRole="teacher"
+
+Teacher Route Security
+
+Teachers can only access:
+
+/teacher/*
+
+Blocked:
+
+/admin/*
+Other role dashboards
+Teacher Dashboard Backend
+Django App
+
+text
+teacher_dashboard
+
+The backend uses a dedicated Django app for teacher APIs.
+
+Purpose:
+
+Clean architecture
+Role isolation
+Better scalability
+Easier maintenance
+Teacher Dashboard API Architecture
+
+All teacher APIs use:
+
+text
+/api/teacher-dashboard/
+
+This fully separates teacher endpoints from admin endpoints.
+
+Teacher Permissions System
+
+Teacher APIs validate:
+
+Authenticated user
+Teacher role
+Course ownership
+Teacher Ownership Validation
+
+Teachers can only manage:
+
+Courses assigned to them
+Lessons inside their courses
+Videos linked to their lessons
+Resources linked to their lessons
+Teacher Courses System
+Overview
+
+Teachers can manage only their own courses.
+
+The dashboard automatically filters courses using:
+
+python
+teacher=request.user
+
+Teacher Courses Features
+
+Teachers can:
+
+View courses
+Edit courses
+Search courses
+Filter courses
+Open course details
+Teacher Courses Frontend
+Pages
+
+text
+TeacherCoursesList.tsx
+TeacherCourseDetails.tsx
+EditTeacherCourse.tsx
+
+Teacher Courses Table
+
+The courses table includes:
+
+Course image
+Course title
+Subject name
+Teacher name
+Course price
+Publishing status
+Actions
+Course Actions
+
+Available actions:
+
+View
+Edit
+
+Removed from teacher dashboard:
+
+Global admin management
+Unauthorized course access
+Teacher Course Filtering
+
+The backend automatically returns only teacher-owned courses.
+
+Example:
+
+python
+Course.objects.filter(
+teacher=request.user
+)
+
+Teacher Lessons System
+Overview
+
+Teachers can fully manage lessons inside their own courses.
+
+Lesson Management Features
+
+Teachers can:
+
+View lessons
+Create lessons
+Edit lessons
+Delete lessons
+Manage lesson publishing
+Manage preview mode
+Upload thumbnails
+Manage lesson resources
+Teacher Lessons Frontend
+Pages
+
+text
+TeacherLessonsList.tsx
+CreateTeacherLesson.tsx
+EditTeacherLesson.tsx
+
+Lesson Filtering System
+
+The system supports filtering lessons by:
+
+Course
+Search keyword
+Smart Lesson Creation Flow
+
+The lesson creation UI was redesigned for scalability.
+
+Old behavior:
+
+Manual lesson searching
+
+New behavior:
+
+Teacher selects course
+System automatically loads related lessons
+
+Benefits:
+
+Better scalability
+Faster workflow
+Better UX for large platforms
+Lesson Form System
+
+The lesson form supports:
+
+Title
+Description
+Order
+Duration
+Thumbnail
+Preview mode
+Publishing status
+Lesson Ordering Validation
+
+Each lesson order is unique inside its course.
+
+Rule:
+
+python
+unique_together = ("course", "order")
+
+Lesson Publishing System
+
+Lessons support:
+
+python
+is_published
+
+Published lessons:
+
+Visible to students
+
+Hidden lessons:
+
+Still manageable by teacher/admin
+Preview Lesson System
+
+Lessons support:
+
+python
+is_preview
+
+Preview lessons:
+
+Publicly accessible
+
+Locked lessons:
+
+Require enrollment
+Teacher Lesson APIs
+Endpoints
+
+Get lessons:
+
+text
+GET /api/teacher-dashboard/lessons/
+
+Create lesson:
+
+text
+POST /api/teacher-dashboard/lessons/
+
+Get lesson:
+
+text
+GET /api/teacher-dashboard/lessons/{id}/
+
+Update lesson:
+
+text
+PATCH /api/teacher-dashboard/lessons/{id}/
+
+Delete lesson:
+
+text
+DELETE /api/teacher-dashboard/lessons/{id}/
+
+Lesson Resources System
+Overview
+
+Teachers can upload downloadable lesson resources.
+
+Supported resource types:
+
+PDFs
+Images
+ZIP files
+Homework
+Notes
+Attachments
+Lesson Resources APIs
+
+Get resources:
+
+text
+GET /api/teacher-dashboard/lessons/{id}/resources/
+
+Create resource:
+
+text
+POST /api/teacher-dashboard/lessons/{id}/resources/
+
+Delete resource:
+
+text
+DELETE /api/teacher-dashboard/resources/{id}/delete/
+
+Teacher Videos System
+Overview
+
+Teachers can manage lesson videos securely using Mux integration.
+
+Video Management Features
+
+Teachers can:
+
+View connected videos
+Upload lesson videos
+Connect videos to lessons
+Monitor playback IDs
+Monitor video processing
+Teacher Videos Frontend
+Pages
+
+text
+TeacherVideos.tsx
+TeacherUploadVideoForm.tsx
+
+Video Upload Architecture
+
+The upload system uses:
+
+text
+Mux Direct Upload
+
+Flow:
+
+text
+Teacher Device
+→ Direct Upload URL
+→ Mux Storage
+→ Django verification
+
+Why Direct Upload Was Used
+
+Benefits:
+
+Reduced backend server load
+Faster uploads
+Better scalability
+Production-ready architecture
+Teacher Video Filtering
+
+Teachers only see:
+
+Videos connected to their own lessons
+Video Upload Flow
+
+Teacher:
+
+Selects course
+Selects lesson
+Selects upload method
+Uploads video
+
+Backend:
+
+Validates ownership
+Generates Mux upload URL
+Stores playback data
+Upload Methods
+
+Supported methods:
+
+Device upload
+URL import architecture
+
+Current primary production flow:
+
+Direct device upload to Mux
+Mux Integration
+
+The teacher dashboard integrates with:
+
+text
+Mux Video
+
+Purpose:
+
+Secure educational streaming
+Adaptive bitrate streaming
+Video processing
+Playback infrastructure
+Mux Direct Upload API
+Endpoint
+
+text
+POST /api/teacher-dashboard/mux/direct-upload/
+
+Video Data Stored Inside Lessons
+
+Each lesson stores:
+
+video_provider
+video_asset_id
+video_playback_id
+Signed Playback Compatibility
+
+The teacher-uploaded videos fully support:
+
+Signed playback tokens
+Protected playback
+Enrollment validation
+Future DRM integration
+Teacher Video APIs
+
+Get videos:
+
+text
+GET /api/teacher-dashboard/videos/
+
+Get upload form data:
+
+text
+GET /api/teacher-dashboard/video-form-data/
+
+Upload video:
+
+text
+POST /api/teacher-dashboard/upload-video/
+
+Create direct upload:
+
+text
+POST /api/teacher-dashboard/mux/direct-upload/
+
+Teacher Profile System
+Overview
+
+Teachers now have a fully customizable profile system.
+
+Profile Features
+
+Teachers can update:
+
+First name
+Last name
+Email
+Phone number
+Bio
+City
+School name
+Profile image
+Teacher Profile Frontend
+Page
+
+text
+TeacherProfile.tsx
+
+Profile Image System
+
+Teachers can upload profile images.
+
+Uploaded images are:
+
+Stored in backend media storage
+Returned through API
+Automatically synchronized with frontend localStorage
+Navbar Profile Synchronization
+
+After profile update:
+
+localStorage updates automatically
+Navbar image updates instantly
+Homepage profile image updates instantly
+
+No page refresh required.
+
+Teacher Password System
+
+Teachers can securely change passwords.
+
+Required fields:
+
+Old password
+New password
+Confirm password
+Teacher Profile APIs
+
+Get profile:
+
+text
+GET /api/teacher-dashboard/profile/
+
+Update profile:
+
+text
+PATCH /api/teacher-dashboard/profile/
+
+Change password:
+
+text
+POST /api/teacher-dashboard/profile/change-password/
+
+Local Storage Synchronization
+
+The frontend stores:
+
+Username
+Role
+Profile image URL
+
+Purpose:
+
+Faster UI rendering
+Persistent login state
+Dynamic navbar rendering
+Dynamic Profile Image System
+
+The homepage navbar now dynamically renders:
+
+User uploaded profile image
+
+Fallback behavior:
+
+Default avatar icon
+Teacher Dashboard Responsive Design
+
+The dashboard uses:
+
+Tailwind CSS
+Responsive grid layouts
+Mobile-first architecture
+
+Desktop:
+
+Sidebar layout
+
+Mobile:
+
+Collapsible navigation
+Error Handling System
+
+The dashboard includes:
+
+Loading states
+Friendly error messages
+Validation states
+Upload progress indicators
+Teacher Dashboard Security Layers
+
+The teacher dashboard now includes:
+
+Layer 1
+
+JWT Authentication
+
+Layer 2
+
+Protected Teacher Routes
+
+Layer 3
+
+Teacher Ownership Validation
+
+Layer 4
+
+Course Ownership Filtering
+
+Layer 5
+
+Protected Video Upload APIs
+
+Layer 6
+
+Mux Secure Upload Infrastructure
+
+Layer 7
+
+Signed Playback Compatibility
+
+Current Security Result
+
+The system now prevents:
+
+Unauthorized course access
+Cross-teacher lesson editing
+Unauthorized video uploads
+Unauthorized resource management
+Direct access to admin systems
+UI/UX Improvements
+
+The teacher dashboard now includes:
+
+Modern responsive design
+Dashboard-style navigation
+Structured management tables
+Better lesson organization
+Better upload flow
+Dynamic role navigation
+Dynamic profile images
+Architectural Improvements
+
+The teacher dashboard architecture introduced:
+
+Dedicated Django teacher app
+Fully separated teacher APIs
+Cleaner frontend organization
+Better scalability
+Enterprise-style dashboard structure
+Important Developer Notes
+
+Teacher APIs should NEVER allow:
+
+Access to unrelated teacher content
+Admin-only management systems
+Global platform modifications
+
+All ownership validation must happen in backend.
+
+Frontend validation alone is NOT secure.
+
+Current System Result
+
+The platform now contains:
+
+Fully functional Admin Dashboard
+Fully functional Teacher Dashboard
+Advanced lesson management
+Protected streaming infrastructure
+Secure Mux integration
+Signed playback architecture
+Profile management system
+Enterprise-style educational dashboard structure
+Future Planned Teacher Dashboard Improvements
+
+Future optional improvements include:
+
+Pagination
+
+Purpose:
+
+Better performance on large datasets
+Toast Notification System
+
+Purpose:
+
+Better user feedback
+Cleaner UX
+Drag & Drop Lesson Ordering
+
+Purpose:
+
+Easier lesson organization
+Advanced Analytics
+
+Possible future teacher analytics:
+
+Student engagement
+Watch time
+Course completion
+Revenue tracking
+Notification System
+
+Possible future notifications:
+
+New enrollments
+Student activity
+Video processing completion
+AI Integration
+
+Future AI integrations may include:
+
+AI lesson summaries
+AI-generated quizzes
+AI teaching assistant
+AI student analytics
+System Design Philosophy
+
+The Teacher Dashboard system was designed to:
+
+Separate permissions cleanly
+Provide scalable educational management
+Reduce dashboard complexity
+Improve teacher workflow
+Prepare the platform for enterprise scalability
+Support secure educational content management
+Build modern production-ready educational infrastructure

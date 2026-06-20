@@ -1,0 +1,977 @@
+X Platform - Admin Dashboard System Documentation
+
+Project Overview
+
+The Admin Dashboard is the central management system of X Platform.
+
+It was designed to provide administrators with full control over the educational platform through a scalable, modular, and production-oriented architecture.
+
+The dashboard allows administrators to manage:
+
+Users
+Subjects
+Courses
+Lessons
+Lesson Resources
+Videos
+Mux Integration
+Access Codes
+Purchases
+Enrollments
+Security Systems
+Devices
+Sessions
+Video Locks
+Platform Statistics
+
+Frontend Stack
+
+React
+TypeScript
+Vite
+Tailwind CSS
+
+Backend Stack
+
+Django
+Django REST Framework
+PostgreSQL
+
+The dashboard was built using a modular architecture to support:
+
+Scalability
+Maintainability
+Large project organization
+Reusable components
+Enterprise-level growth
+
+Admin Dashboard Frontend Architecture
+
+The dashboard frontend structure:
+
+src/dashboard/admin/
+
+Main internal structure:
+
+layout/
+overview/
+shared/
+modules/
+
+Modules include:
+
+users/
+subjects/
+courses/
+lessons/
+videos/
+access-codes/
+purchases/
+enrollments/
+security/
+
+Each module follows:
+
+pages/
+components/
+services/
+types/
+
+Benefits of this architecture:
+
+Clean separation of concerns
+Reusable UI
+Reusable API layers
+Centralized TypeScript types
+Better scalability
+Cleaner maintenance
+Large-project compatibility
+
+Admin Dashboard Layout System
+
+The layout system includes:
+
+AdminLayout.tsx
+AdminSidebar.tsx
+AdminNavbar.tsx
+
+AdminLayout Responsibilities
+
+Shared dashboard layout
+Sidebar rendering
+Navbar rendering
+Responsive dashboard structure
+Protected admin area wrapper
+
+AdminSidebar Responsibilities
+
+Navigation links for:
+
+Overview
+Users
+Subjects
+Courses
+Lessons
+Videos
+Access Codes
+Purchases
+Enrollments
+Security
+
+AdminNavbar Responsibilities
+
+Displays:
+
+Admin name
+Profile image
+Logout button
+Top navigation area
+Future notification support
+
+Admin Dashboard Access Control
+
+The dashboard is protected using:
+
+JWT Authentication
+Role-Based Authorization
+
+Only users with:
+
+role = admin
+
+can access admin routes.
+
+Frontend Protection
+
+Frontend route protection uses:
+
+ProtectedRoute
+
+Example:
+
+<ProtectedRoute requiredRole="admin">
+  <AdminLayout />
+</ProtectedRoute>
+
+ProtectedRoute Responsibilities
+
+Authentication validation
+JWT existence validation
+Role validation
+Dashboard isolation
+Unauthorized redirection
+
+The system checks:
+
+access token
+stored user object
+required role
+
+Unauthorized users are redirected to:
+
+/
+
+User Persistence System
+
+Authenticated user data is stored in:
+
+localStorage
+
+Stored data:
+
+access_token
+refresh_token
+user
+
+Stored user object includes:
+
+id
+username
+email
+role
+profile_image
+
+Benefits:
+
+Avoid unnecessary API requests
+Persistent login state
+Protected route validation
+Role-based UI rendering
+
+Admin Overview System
+
+The Overview page acts as the dashboard homepage.
+
+Route:
+
+/admin
+
+Overview Statistics
+
+The overview page displays:
+
+Total Users
+Total Students
+Total Teachers
+Total Admins
+Total Subjects
+Total Courses
+Published Courses
+Unpublished Courses
+Total Lessons
+Published Lessons
+Unpublished Lessons
+Total Purchases
+Completed Purchases
+Pending Purchases
+Total Enrollments
+Active Enrollments
+Inactive Enrollments
+Total Access Codes
+Used Access Codes
+Unused Access Codes
+Active Devices
+Active Sessions
+Active Video Locks
+
+Overview Backend Endpoint
+
+GET /api/admin-dashboard/overview/
+
+Overview Frontend Features
+
+Real-time statistics loading
+Loading states
+Error handling
+Dashboard cards
+Security snapshot
+Platform status badges
+
+Subjects Management System
+
+Route:
+
+/admin/subjects
+
+Features
+
+Create subjects
+Edit subjects
+Delete subjects
+Search subjects
+Upload subject images
+
+Subject Fields
+
+name
+slug
+description
+image
+created_at
+
+Frontend Pages
+
+SubjectsList.tsx
+CreateSubject.tsx
+EditSubject.tsx
+
+Reusable Components
+
+SubjectsTable.tsx
+SubjectForm.tsx
+
+Courses Management System
+
+Route:
+
+/admin/courses
+
+Features
+
+Create courses
+Edit courses
+Delete courses
+Publish courses
+Unpublish courses
+Assign teachers
+Upload thumbnails
+Search courses
+Filter courses
+
+Course Fields
+
+subject
+teacher
+title
+description
+image
+price
+is_published
+created_at
+
+Frontend Pages
+
+CoursesList.tsx
+CreateCourse.tsx
+EditCourse.tsx
+AdminCourseDetails.tsx
+
+Teacher Selection System
+
+Originally the frontend attempted:
+
+/api/users/?role=teacher
+
+This produced:
+
+404 Not Found
+
+Reason:
+
+No centralized admin API existed.
+
+Solution
+
+Created dedicated Django app:
+
+admin_dashboard
+
+Benefits:
+
+Centralized admin APIs
+Cleaner architecture
+Separation of concerns
+Future scalability
+
+Lessons Management System
+
+Route:
+
+/admin/lessons
+
+Features
+
+Create lessons
+Edit lessons
+Delete lessons
+Assign lessons to courses
+Manage lesson order
+Preview lessons
+Publish lessons
+Upload thumbnails
+Manage lesson descriptions
+
+Lesson Fields
+
+course
+title
+description
+thumbnail
+video_url
+order
+is_preview
+is_published
+
+Frontend Pages
+
+LessonsList.tsx
+CreateLesson.tsx
+EditLesson.tsx
+LessonDetails.tsx
+
+Lesson Resources System
+
+Supports downloadable lesson resources.
+
+Examples:
+
+PDFs
+Worksheets
+Homework
+Notes
+
+Features
+
+Upload resources
+Delete resources
+View uploaded resources
+
+Videos Management System
+
+Route:
+
+/admin/videos
+
+The video system is one of the most advanced systems in the platform.
+
+Features
+
+Mux Integration
+Direct uploads
+External URL uploads
+Automatic video processing
+Automatic lesson linking
+Webhook processing
+Signed playback preparation
+DRM preparation
+
+Mux Integration
+
+Mux is used as the primary video infrastructure provider.
+
+Upload Architecture
+
+Frontend
+→ Django creates upload URL
+→ Browser uploads directly to Mux
+→ Mux processes video
+→ Webhook updates lesson
+
+Benefits
+
+Reduced backend load
+Scalable uploads
+Enterprise-level infrastructure
+Faster upload speeds
+
+Supported Upload Methods
+
+1. Direct device upload
+2. External video URL upload
+
+Video Upload UI Features
+
+Progress bars
+Upload status tracking
+Validation system
+Retry system
+
+Upload Statuses
+
+idle
+uploading
+processing
+ready
+failed
+
+Validation System
+
+Validates:
+
+File size
+File extension
+MIME type
+
+Supported formats:
+
+MP4
+MOV
+WEBM
+MKV
+
+Mux Webhook System
+
+Webhook route:
+
+/api/admin-dashboard/mux/webhook/
+
+Responsibilities
+
+Save playback IDs
+Save asset IDs
+Link videos to lessons
+Detect completed processing
+
+Main event:
+
+video.asset.ready
+
+Passthrough System
+
+Each upload stores:
+
+passthrough = lesson_id
+
+Example:
+
+"passthrough": "3"
+
+Purpose:
+
+Automatically connect videos to lessons.
+
+Signed Playback Preparation
+
+Playback IDs use:
+
+policy = signed
+
+This prepares the platform for:
+
+Secure playback
+JWT playback tokens
+Playback restrictions
+Watermarking
+DRM integration
+
+Access Codes Management System
+
+Route:
+
+/admin/access-codes
+
+Features
+
+Generate access codes
+Select course
+Select code count
+Set expiration date
+Search codes
+Filter codes
+Enable codes
+Disable codes
+Track used codes
+
+Access Code Fields
+
+code
+course
+is_used
+is_active
+used_by
+created_by
+used_at
+expires_at
+created_at
+
+Frontend Pages
+
+AccessCodesList.tsx
+GenerateAccessCodes.tsx
+
+System Features
+
+Course filtering
+Used/unused filtering
+Active/inactive filtering
+Expiration support
+Usage tracking
+
+Purchases Management System
+
+Route:
+
+/admin/purchases
+
+Features
+
+View purchases
+Search purchases
+Filter purchases
+Monitor purchase status
+Monitor payment flow
+
+Purchase Statuses
+
+pending
+completed
+
+Frontend Pages
+
+PurchasesList.tsx
+PurchaseDetails.tsx
+
+Displayed Information
+
+Student
+Course
+Amount
+Status
+Provider
+Reference IDs
+Creation timestamps
+
+Enrollments Management System
+
+Route:
+
+/admin/enrollments
+
+The enrollment system is one of the most important systems in the platform.
+
+It acts as the central course-access control layer.
+
+Enrollment Sources
+
+access_code
+purchase
+admin_grant
+free
+
+Features
+
+View enrollments
+Search enrollments
+Filter enrollments
+Activate enrollments
+Deactivate enrollments
+Create manual enrollments
+
+Frontend Pages
+
+EnrollmentsList.tsx
+CreateEnrollment.tsx
+
+Manual Enrollment System
+
+Admins can manually:
+
+Grant course access
+Assign free enrollments
+Assign admin-granted enrollments
+
+Users Management System
+
+Route:
+
+/admin/users
+
+Features
+
+View all users
+Search users
+Filter users
+View details
+Edit users
+Change roles
+Activate accounts
+Deactivate accounts
+
+Supported Roles
+
+student
+teacher
+admin
+
+Frontend Pages
+
+UsersList.tsx
+UserDetails.tsx
+EditUser.tsx
+
+Displayed User Information
+
+Name
+Email
+Phone
+Role
+Status
+Profile image
+Bio
+Creation dates
+
+Important Security Protection
+
+Admins cannot deactivate their own account.
+
+Protection added inside:
+
+AdminUserToggleActiveView
+
+Security Management System
+
+Route:
+
+/admin/security
+
+The security system was designed to reduce:
+
+Account sharing
+Unauthorized access
+Suspicious activity
+
+Security Overview Sections
+
+Devices
+Sessions
+Video Locks
+
+Devices Management
+
+Route:
+
+/admin/security/devices
+
+Features
+
+View devices
+Search devices
+Deactivate devices
+View IP addresses
+View user agents
+Monitor active devices
+
+Device Fields
+
+device_id
+device_name
+ip_address
+user_agent
+is_active
+last_login_at
+
+Important Behavior
+
+Disabling a device automatically:
+
+Ends active sessions
+Clears active video locks
+
+Sessions Management
+
+Route:
+
+/admin/security/sessions
+
+Features
+
+View sessions
+Search sessions
+End sessions manually
+Monitor last seen time
+
+Session Fields
+
+user
+device
+refresh_token
+ip_address
+user_agent
+is_active
+last_seen_at
+
+Video Locks Management
+
+Route:
+
+/admin/security/video-locks
+
+Purpose
+
+Monitor active video playback locks.
+
+Features
+
+View active video sessions
+Detect stuck video locks
+Clear video locks manually
+
+Video Lock Fields
+
+user
+device
+course_id
+lesson_id
+started_at
+last_seen_at
+is_active
+
+Purpose of Video Locking
+
+Prevent simultaneous video playback
+Reduce account sharing
+Protect paid content
+
+React Hook Problems Encountered
+
+Warnings
+
+react-hooks/exhaustive-deps
+react-hooks/set-state-in-effect
+
+Cause
+
+State updates were triggered directly inside:
+
+useEffect()
+
+without proper cleanup logic.
+
+Solution
+
+Refactored using:
+
+let isMounted = true
+
+Benefits
+
+Prevented memory leaks
+Prevented cascading renders
+Improved React performance
+Removed ESLint warnings
+
+Major Problems Encountered During Development
+
+1. ProtectedRoute TypeScript Error
+
+Error:
+
+Property 'requiredRole' does not exist on type 'Props'
+
+Solution:
+
+Extended component props:
+
+requiredRole?: string
+
+2. User Object Was Null
+
+Problem:
+
+Admin routes redirected incorrectly.
+
+Cause:
+
+User data was not persisted properly.
+
+Solution:
+
+Persisted:
+
+user
+access_token
+refresh_token
+
+inside localStorage.
+
+3. Teacher Endpoint 404 Error
+
+Problem:
+
+/api/users/?role=teacher
+
+returned:
+
+404
+
+Solution:
+
+Created centralized:
+
+admin_dashboard
+
+application.
+
+4. Mux Webhook Offline Error
+
+Error:
+
+ERR_NGROK_3200
+
+Cause:
+
+ngrok tunnel offline.
+
+Solution:
+
+ngrok http 8000
+
+5. Mux Webhook 400 Error
+
+Cause:
+
+DisallowedHost
+
+Solution:
+
+Added ngrok domain to:
+
+ALLOWED_HOSTS
+
+6. React Hook State Warnings
+
+Cause:
+
+Calling setState directly inside effects.
+
+Solution:
+
+Async loaders
+Cleanup logic
+Mounted-state guards
+
+Security Philosophy
+
+The dashboard was designed to:
+
+Centralize administration
+Protect educational content
+Reduce account sharing
+Support secure playback
+Scale safely
+Prepare for enterprise-level video security
+
+Development Philosophy
+
+The dashboard architecture was designed to be:
+
+Clean
+Modular
+Scalable
+Maintainable
+Professional
+Production-oriented
+
+The project avoids:
+
+Huge files
+Mixed responsibilities
+Repeated UI logic
+Repeated API logic
+Using any in TypeScript
+
+Current Final Dashboard Capabilities
+
+The admin dashboard currently supports:
+
+✅ Users Management
+✅ Subjects Management
+✅ Courses Management
+✅ Lessons Management
+✅ Lesson Resources
+✅ Video Management
+✅ Mux Integration
+✅ Direct Uploads
+✅ Upload Validation
+✅ Upload Progress
+✅ Automatic Video Linking
+✅ Signed Playback Preparation
+✅ Access Codes Management
+✅ Purchases Management
+✅ Enrollments Management
+✅ Devices Management
+✅ Sessions Management
+✅ Video Locks Management
+✅ Security Monitoring
+✅ Role-Based Protection
+✅ Real Dashboard Statistics
+✅ Modular Frontend Architecture
+✅ Centralized Admin APIs
+✅ JWT Protection
+✅ Enterprise-ready structure
+
+Future Planned Expansions
+
+Teacher Dashboard
+Student Dashboard
+Revenue analytics
+Real payment gateway monitoring
+Audit logs
+Notifications system
+AI content management
+DRM management UI
+Advanced analytics
+Video processing analytics
+Student activity analytics
+Real-time monitoring
+Advanced watermark controls
