@@ -40,7 +40,7 @@ function Home() {
               </h2>
 
               <p className="mt-6 text-lg text-slate-600 leading-9 max-w-2xl">
-                منصة X Platform تساعد طلاب التوجيهي على الوصول إلى الدروس
+                منصة SANA تساعد طلاب التوجيهي على الوصول إلى الدروس
                 والكورسات بطريقة مرتبة، واضحة، وآمنة.
               </p>
 

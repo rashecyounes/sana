@@ -106,7 +106,7 @@ function Register() {
               <div className="bg-white/20 p-3 rounded-2xl">
                 <GraduationCap size={34} />
               </div>
-              <h1 className="text-2xl font-bold">X Platform</h1>
+              <h1 className="text-2xl font-bold">SANA</h1>
             </div>
 
             <h2 className="text-4xl font-bold mt-16 leading-tight">

@@ -210,7 +210,7 @@ function Login() {
           </div>
 
           <p className="text-sm text-sky-100">
-            Secure login system for X Platform.
+            Secure login system for SANA.
           </p>
         </div>
       </div>

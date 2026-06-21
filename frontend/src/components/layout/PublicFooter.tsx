@@ -19,7 +19,7 @@ function PublicFooter() {
               </div>
 
               <div>
-                <h2 className="text-2xl font-black">X Platform</h2>
+                <h2 className="text-2xl font-black">SANA</h2>
                 <p className="text-sm text-slate-400 mt-1">
                   منصة تعليمية لطلاب التوجيهي
                 </p>
@@ -84,7 +84,7 @@ function PublicFooter() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-          <p>© 2026 X Platform. جميع الحقوق محفوظة.</p>
+          <p>© 2026 SANA. جميع الحقوق محفوظة.</p>
 
           <p>
             صُممت لتجربة تعليمية واضحة ومناسبة للطلاب.
