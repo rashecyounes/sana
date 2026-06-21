@@ -75,7 +75,7 @@ function PublicNavbar() {
           </div>
 
           <div>
-            <h1 className="text-xl font-black tracking-tight">X Platform</h1>
+            <h1 className="text-xl font-black tracking-tight"> SANA </h1>
             <p className="text-xs text-slate-500">
               منصة تعليمية لطلاب التوجيهي
             </p>
